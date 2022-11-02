@@ -10,10 +10,13 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.Spinner;
 
 import androidx.annotation.Nullable;
 
@@ -29,6 +32,7 @@ public class TaskFragment extends Fragment {
     private Task task;
     private EditText dateField;
     private CheckBox doneCheckBox;
+    private Spinner categorySpinner;
 
     private final Calendar calendar = Calendar.getInstance();
 
@@ -49,30 +53,16 @@ public class TaskFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_task, container, false);
-        dateField = view.findViewById(R.id.task_date);
-
-        DatePickerDialog.OnDateSetListener date = (view12, year, month, day) -> {
-            calendar.set(Calendar.YEAR, year);
-            calendar.set(Calendar.MONTH, month);
-            calendar.set(Calendar.DAY_OF_MONTH, day);
-            setupDateFieldValue(calendar.getTime());
-            task.setDate(calendar.getTime());
-        };
-
-        dateField.setOnClickListener(view1 ->
-                new DatePickerDialog(getContext(), date, calendar.get(Calendar.YEAR),
-                        calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
-                        .show());
-        setupDateFieldValue(task.getDate());
-
 
         nameField = view.findViewById(R.id.task_name);
+        dateField = view.findViewById(R.id.task_date);
         doneCheckBox = view.findViewById(R.id.task_done);
-        nameField.setText(task.getName());
+        categorySpinner = view.findViewById(R.id.task_category);
 
+        nameField.setText(task.getName());
         nameField.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            public void beforeTextChanged(CharSequence s, int start, int before, int count) {
 
             }
 
@@ -86,10 +76,39 @@ public class TaskFragment extends Fragment {
 
             }
         });
-        dateButton.setText(task.getDate().toString());
-        dateButton.setEnabled(false);
+
+        dateField.setText(task.getDate().toString());
+        dateField.setEnabled(true);
+        dateField.setText(task.getDate().toString());
+
         doneCheckBox.setChecked(task.isDone());
         doneCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> task.setDone(isChecked));
+
+        DatePickerDialog.OnDateSetListener date = (view12, year, month, day) -> {
+            calendar.set(Calendar.YEAR, year);
+            calendar.set(Calendar.MONTH, month);
+            calendar.set(Calendar.DAY_OF_MONTH, day);
+            setupDateFieldValue(calendar.getTime());
+            task.setDate(calendar.getTime());
+        };
+        dateField.setOnClickListener(view1 ->
+                new DatePickerDialog(getContext(), date, calendar.get(Calendar.YEAR),
+                        calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show());
+        setupDateFieldValue(task.getDate());
+
+        categorySpinner.setAdapter(new ArrayAdapter<>(this.getContext(), android.R.layout.simple_spinner_item, Category.values()));
+        categorySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                task.setCategory(Category.values()[position]);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+        categorySpinner.setSelection(task.getCategory().ordinal());
 
         return view;
     }
